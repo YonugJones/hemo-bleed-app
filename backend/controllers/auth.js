@@ -51,6 +51,44 @@ const signup = asyncHandler(async (req, res) => {
   })
 })
 
+const login = asyncHandler(async (req, res) => {
+  const { username, password } = req.body
+  if (!username || !password) throw new CustomError('Username and password are required', 401)
+
+  const user = await prisma.user.findUnique({ where: { username } })
+  if (!user) throw new CustomError('Invalid username or password', 403)
+
+  const isMatch = await bcrypt.compare(password, user.password)
+  if (!isMatch) throw new CustomError('Invalid username or password', 403)
+
+  const accessToken = generateAccessToken(user)
+  const refreshToken = generateRefreshToken(user)
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken }
+  })
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV = 'production' ? true : false,
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  })
+
+  res.status(200).json({
+    success: true,
+    message: 'Successfully logged in',
+    accessToken,
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profilePic: user.profilePic
+    }
+  })
+})
+
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
