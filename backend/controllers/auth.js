@@ -89,7 +89,7 @@ const login = asyncHandler(async (req, res) => {
   })
 })
 
-const refresh = asyncHandler(async (req, res) => {
+const refreshAccessToken = asyncHandler(async (req, res) => {
   const token = req.cookies.refreshToken
   if (!token) throw new CustomError('Refresh token required', 403)
 
@@ -109,5 +109,5 @@ module.exports = {
   generateRefreshToken,
   signup,
   login,
-  refresh
+  refreshAccessToken
 }
