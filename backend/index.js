@@ -5,6 +5,7 @@ const corsOptions = require('./config/corsOptions')
 const errorHandler = require('./middleware/errorHandler')
 const cookieParser = require('cookie-parser')
 const authRouter = require('./routes/auth')
+const userRouter = require('./routes/user')
 
 // Define the main app
 const app = express()
@@ -25,6 +26,7 @@ app.use(cookieParser())
 app.get('/', (req, res) => { res.json({ message: 'Welcome to the backend API for Hemophilia Bleed App' }) })
 
 app.use('/auth', authRouter)
+app.use('/user', userRouter)
 
 // Global Error Handler
 app.use(errorHandler)
