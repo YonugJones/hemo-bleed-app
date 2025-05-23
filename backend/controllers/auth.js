@@ -110,7 +110,7 @@ const logout = asyncHandler(async (req, res) => {
     return res.status(204).json({ message: 'No content' })
   }
 
-  const user = await prisma.user.findUnique({ where: { refreshToken } })
+  const user = await prisma.user.findFirst({ where: { refreshToken } })
   if (!user) {
     res.clearCookie('refreshToken')
     return res.status(204).json({ message: 'No content' })
