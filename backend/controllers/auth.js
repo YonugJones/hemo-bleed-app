@@ -104,10 +104,40 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   })
 })
 
+const logout = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.cookies
+  if (!refreshToken) {
+    return res.status(204).json({ message: 'No content' })
+  }
+
+  const user = await prisma.user.findUnique({ where: { refreshToken } })
+  if (!user) {
+    res.clearCookie('refreshToken')
+    return res.status(204).json({ message: 'No content' })
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken: null }
+  })
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict'
+  })
+
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully'
+  })
+})
+
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
   signup,
   login,
-  refreshAccessToken
+  refreshAccessToken,
+  logout
 }
