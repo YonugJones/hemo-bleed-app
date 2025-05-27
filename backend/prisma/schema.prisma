@@ -13,6 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enums
 enum HemophiliaType {
   A
   B
@@ -27,6 +28,22 @@ enum HemophiliaSeverity {
   Unknown
 }
 
+enum BleedSeverity {
+  Mild
+  Moderate
+  Severe
+  Unknown
+}
+
+enum InfusionType {
+  Routine
+  OnDemand
+  PreExercise
+  PostExercise
+  Other
+}
+
+// Models
 model User {
   id                 String             @id @default(uuid())
   username           String             @unique
@@ -40,4 +57,52 @@ model User {
   refreshToken       String?
   profilePic         String?
   createdAt          DateTime           @default(now())
+
+  // Relations
+  bleeds    Bleed[]    @relation("UserBleeds")
+  infusions Infusion[] @relation("UserInfusions")
+}
+
+model Bleed {
+  id                String        @id @default(uuid())
+  startDate         DateTime      @default(now())
+  endDate           DateTime?
+  bodyPart          String        @default("Unknown")
+  severity          BleedSeverity
+  description       String?
+  cause             String?
+  mobilityImpact    String?
+  usedCrutches      Boolean?
+  ptStartDate       DateTime?
+  ptNotes           String?
+  isRebleed         Boolean?
+  relatedBleedId    String?
+  timeToInfuseHours Int?
+  preventable       Boolean?
+  activityAtTime    String?
+  weatherNotes      String?
+
+  // Foreign key to User
+  userId String
+  user   User   @relation("UserBleeds", fields: [userId], references: [id])
+
+  // Optional link to infusions
+  infusions Infusion[] @relation("BleedInfusions")
+}
+
+model Infusion {
+  id        String       @id @default(uuid())
+  date      DateTime     @default(now())
+  type      InfusionType
+  product   String       @default("Unknown")
+  doseUnits Int          @default(0)
+  notes     String?
+
+  // Foreign key to User
+  userId String
+  user   User   @relation("UserInfusions", fields: [userId], references: [id])
+
+  // Optional link to a Bleed
+  bleedId String?
+  bleed   Bleed?  @relation("BleedInfusions", fields: [bleedId], references: [id])
 }
